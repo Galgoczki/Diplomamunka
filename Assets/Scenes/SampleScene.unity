@@ -649,8 +649,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 102, y: 102}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchoredPosition: {x: 202.9, y: 139.3}
+  m_SizeDelta: {x: 200, y: 136}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &419134118
 MonoBehaviour:
@@ -1288,13 +1288,16 @@ MonoBehaviour:
   fnumber: 1.8
   focusdistance: 3000
   coc: 0.03
+  apertureDiameter: 4
+  sensorSizeHorizontal: 24
+  sensorSizevertikal: 35
   rawImageOutput: {fileID: 419134118}
   canMove: 1
   viewMaxDistance: 20
-  angleOfViewHorizontal: 90
-  angleOfViewVertical: 76
-  sizeOfTheFilterHorizontal: 200
-  sizeOfTheFilterVertical: 200
+  angleOfViewHorizontal: 39.6
+  angleOfViewVertical: 27
+  sizeOfTheFilterHorizontal: 100
+  sizeOfTheFilterVertical: 100
 --- !u!1 &1443705180
 GameObject:
   m_ObjectHideFlags: 0

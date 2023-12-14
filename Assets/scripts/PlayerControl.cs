@@ -21,6 +21,9 @@ public class PlayerControl : MonoBehaviour
     public float fnumber = 1.8f;
     public float focusdistance = 3000f;
     public float coc = 0.03f;
+    public float apertureDiameter = 4.0f;
+    public float sensorSizeHorizontal = 24f;
+    public float sensorSizevertikal = 35f;
     public RawImage rawImageOutput = null;
 
     CharacterController characterController;
@@ -43,36 +46,10 @@ public class PlayerControl : MonoBehaviour
     private JobHandle _jobHandle;
     private bool isNextRaycast = false;
 
-    public struct RayResult
-    {
 
-    }
-
-    //[BurstCompile]
-    private struct PrepareRaycastCommandsJob : IJobFor
-    {
-        [ReadOnly]
-        public NativeArray<Vector3> positions;
-
-        [ReadOnly]
-        public NativeArray<Vector3> directions;
-
-        [NativeDisableParallelForRestriction]
-        public NativeArray<RaycastCommand> commands;
-
-        public int layerMask;
-
-        public void Execute(int index)
-        {
-            Vector3 position = this.positions[index];
-            Vector3 direction = this.directions[index];
-            this.commands[index] = new RaycastCommand(
-                position, direction, new QueryParameters(this.layerMask), 50);
-        }
-    }
     void Awake()
     {
-        int size = sizeOfTheFilterHorizontal * sizeOfTheFilterVertical;
+        int size = sizeOfTheFilterVertical * sizeOfTheFilterHorizontal;
         _raycastCommands = new NativeArray<RaycastCommand>(size, Allocator.Persistent);
         _raycastHits = new NativeArray<RaycastHit>(size, Allocator.Persistent);
     }
@@ -110,12 +87,12 @@ public class PlayerControl : MonoBehaviour
                     pixelUV.x *= tex.width;
                     pixelUV.y *= tex.height;
                     rawColorImage[i * sizeOfTheFilterVertical + j] = tex.GetPixel((int)pixelUV.x, (int)pixelUV.y);
-                    depthImage[i * sizeOfTheFilterVertical + j] = _raycastHits[i * sizeOfTheFilterVertical + j].distance;
+                    depthImage[i * sizeOfTheFilterVertical + j] = (_raycastHits[i * sizeOfTheFilterVertical + j].distance)*1000;
                 }
                 else
                 {
                     rawColorImage[i * sizeOfTheFilterVertical + j] = Color.blue;
-                    depthImage[i * sizeOfTheFilterVertical + j] = -1;
+                    depthImage[i * sizeOfTheFilterVertical + j] = focusdistance;
                 }
             }
         }
@@ -124,18 +101,34 @@ public class PlayerControl : MonoBehaviour
         float dofFarMax=(H*focusdistance)/(H - (focusdistance-flenght));
         float dofNearMin=(H*focusdistance)/(H + (focusdistance- flenght));
         float dof= dofFarMax- dofNearMin;
+        float f2 = flenght * flenght;
         //float dof= (2*focusdistance*focusdistance*fnumber*coc)/(flenght*flenght);
         Debug.Log(dofFarMax);
         Debug.Log(dofNearMin);
         Debug.Log(dof);
 
-        /*for (int i = 0; i < sizeOfTheFilterVertical; i++)
+        float pixelpermmx = sizeOfTheFilterHorizontal / sensorSizeHorizontal;
+        float pixelpermmy = sizeOfTheFilterVertical / sensorSizevertikal;
+
+        for (int i = 0; i < sizeOfTheFilterVertical; i++)
         {
             for (int j = 0; j < sizeOfTheFilterHorizontal; j++)
             {
-
+                float c = apertureDiameter * ((depthImage[i * sizeOfTheFilterVertical + j] - focusdistance) / depthImage[i * sizeOfTheFilterVertical + j]);
+                if (Mathf.Floor(c * pixelpermmx) > 0 || Mathf.Floor(c * pixelpermmy) > 0)
+                {
+                    int ii = (int)Mathf.Floor(c * pixelpermmx);
+                    int jj = (int)Mathf.Floor(c * pixelpermmy);
+                    for (int convi = 0; convi < ii; convi++)//((ii/2)-(ii%2))
+                    {
+                        for (int convj = 0; convj <= jj; convj++)
+                        {
+                            
+                        }
+                    }
+                }
             }
-        }*/
+        }
 
 
 
@@ -146,7 +139,6 @@ public class PlayerControl : MonoBehaviour
             texture.Apply();
             rawImageOutput.texture = texture;
         }
-
     }
     //functions
     void CastRay()
@@ -157,12 +149,10 @@ public class PlayerControl : MonoBehaviour
         //következö raycastok elinditása
         Ray ray = cam.ScreenPointToRay(new Vector3(Mathf.Round(cam.pixelWidth / 2), Mathf.Round(cam.pixelHeight / 2), 0));
         Ray rayOrigine = cam.ScreenPointToRay(Input.mousePosition);
-        string sum = "";
-        for (int i = 0; i < sizeOfTheFilterVertical; i++) {
+        for (int i = 0; i < sizeOfTheFilterVertical; ++i) {
             float yOffset = ((sizeOfTheFilterHorizontal - 1) / 2f) - i;
-            for (int j = 0; j < sizeOfTheFilterHorizontal; j++) {
+            for (int j = 0; j < sizeOfTheFilterHorizontal; ++j) {
                 float xOffset = j - ((sizeOfTheFilterVertical - 1) / 2f);
-                sum += "[ " + xOffset + " : " + yOffset + " ]";
                 Vector3 position = ray.origin;
                 Quaternion angleRight = Quaternion.AngleAxis((angleOfViewHorizontal / sizeOfTheFilterHorizontal) * xOffset, transform.up);
                 Quaternion angleDown = Quaternion.AngleAxis((angleOfViewVertical / sizeOfTheFilterVertical) * yOffset, transform.right);
@@ -171,7 +161,8 @@ public class PlayerControl : MonoBehaviour
                 Vector3 direction = angleRight * (angleDown * ray.direction);
                 //bool isHit = Physics.Raycast(position, direction, out hit, viewMaxDistance);
                 //QueryParameters queryParameters = QueryParameters();
-                _raycastCommands[i * sizeOfTheFilterVertical + j] = new RaycastCommand(position, direction, queryParameters, viewMaxDistance);
+                Debug.Log((i * sizeOfTheFilterVertical) + j);
+                _raycastCommands[(i * sizeOfTheFilterVertical) + j] = new RaycastCommand(position, direction, queryParameters, viewMaxDistance);
                 //régi verzió
                 //_raycastCommands[i * sizeOfTheFilterVertical + j] = new RaycastCommand(position, direction, viewMaxDistance, 0/* ~0u layermasj*/, 1/*max hit*/);
 
