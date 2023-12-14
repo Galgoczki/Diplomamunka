@@ -63,6 +63,19 @@ public class PlayerControl : MonoBehaviour
     void CompliteRayCast()
     {
         isNextRaycast = false;
+        //valtozok
+        float h = flenght + (flenght * flenght) / (fnumber * coc);
+        float dofFarMax = (h * focusdistance) / (h - (focusdistance - flenght));
+        float dofNearMin = (h * focusdistance) / (h + (focusdistance - flenght));
+        float dof = dofFarMax - dofNearMin;
+        float f2 = flenght * flenght;
+        //float dof= (2*focusdistance*focusdistance*fnumber*coc)/(flenght*flenght);
+        Debug.Log(dofFarMax);
+        Debug.Log(dofNearMin);
+        Debug.Log(dof);
+
+        float pixelpermmx = sizeOfTheFilterHorizontal / sensorSizeHorizontal;
+        float pixelpermmy = sizeOfTheFilterVertical / sensorSizevertikal;
         //adat feldolgozása
         Color[] rawColorImage = new Color[sizeOfTheFilterHorizontal * sizeOfTheFilterVertical];
         float[] depthImage = new float[sizeOfTheFilterHorizontal * sizeOfTheFilterVertical];
@@ -92,47 +105,206 @@ public class PlayerControl : MonoBehaviour
                 else
                 {
                     rawColorImage[i * sizeOfTheFilterVertical + j] = Color.blue;
-                    depthImage[i * sizeOfTheFilterVertical + j] = focusdistance;
+                    depthImage[i * sizeOfTheFilterVertical + j] = dofFarMax;
                 }
             }
         }
         //depth of field
-        float H = flenght + (flenght * flenght) / (fnumber*coc);
-        float dofFarMax=(H*focusdistance)/(H - (focusdistance-flenght));
-        float dofNearMin=(H*focusdistance)/(H + (focusdistance- flenght));
-        float dof= dofFarMax- dofNearMin;
-        float f2 = flenght * flenght;
-        //float dof= (2*focusdistance*focusdistance*fnumber*coc)/(flenght*flenght);
-        Debug.Log(dofFarMax);
-        Debug.Log(dofNearMin);
-        Debug.Log(dof);
 
-        float pixelpermmx = sizeOfTheFilterHorizontal / sensorSizeHorizontal;
-        float pixelpermmy = sizeOfTheFilterVertical / sensorSizevertikal;
-
+        int V = sizeOfTheFilterVertical;
+        int H = sizeOfTheFilterHorizontal;
+        float[] resColorImage_r = new float[sizeOfTheFilterHorizontal * sizeOfTheFilterVertical];
+        float[] resColorImage_g = new float[sizeOfTheFilterHorizontal * sizeOfTheFilterVertical];
+        float[] resColorImage_b = new float[sizeOfTheFilterHorizontal * sizeOfTheFilterVertical];
         for (int i = 0; i < sizeOfTheFilterVertical; i++)
         {
             for (int j = 0; j < sizeOfTheFilterHorizontal; j++)
             {
                 float c = apertureDiameter * ((depthImage[i * sizeOfTheFilterVertical + j] - focusdistance) / depthImage[i * sizeOfTheFilterVertical + j]);
-                if (Mathf.Floor(c * pixelpermmx) > 0 || Mathf.Floor(c * pixelpermmy) > 0)
+                //nem volt idom befejezni a merettol fuggo elmosodast
+                float d = depthImage[i * sizeOfTheFilterVertical + j];
+                if (d < dofNearMin)
+                {//5x5 gauss
+                    //r
+                    if (i - 2 > 0 && j - 2 > 0 && (depthImage[(i - 2) * V + j - 2]>=dofNearMin || depthImage[(i - 2) * V + j - 2] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j - 2].r * 1f / 273f;
+                    if (i - 2 > 0 && j - 1 > 0 && (depthImage[(i - 2) * V + j - 1]>=dofNearMin || depthImage[(i - 2) * V + j - 1] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j - 1].r * 4f / 273f;
+                    if (i - 2 > 0 && j - 0 > 0 && (depthImage[(i - 2) * V + j - 0]>=dofNearMin || depthImage[(i - 2) * V + j - 0] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j + 0].r * 7f / 273f;
+                    if (i - 2 > 0 && j + 1 < H && (depthImage[(i - 2) * V + j + 1]>=dofNearMin || depthImage[(i - 2) * V + j + 1] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j + 1].r * 4f / 273f;
+                    if (i - 2 > 0 && j + 2 < H && (depthImage[(i - 2) * V + j + 2]>=dofNearMin || depthImage[(i - 2) * V + j + 2] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j + 2].r * 1f / 273f;
+                    if (i - 1 > 0 && j - 2 > 0 && (depthImage[(i - 1) * V + j - 2]>=dofNearMin || depthImage[(i - 1) * V + j - 2] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j - 2].r * 4f / 273f;
+                    if (i - 1 > 0 && j - 1 > 0 && (depthImage[(i - 1) * V + j - 1]>=dofNearMin || depthImage[(i - 1) * V + j - 1] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j - 1].r * 16f / 273f;
+                    if (i - 1 > 0 && j - 0 > 0 && (depthImage[(i - 1) * V + j - 0]>=dofNearMin || depthImage[(i - 1) * V + j - 0] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j + 0].r * 26f / 273f;
+                    if (i - 1 > 0 && j + 1 < H && (depthImage[(i - 1) * V + j + 1]>=dofNearMin || depthImage[(i - 1) * V + j + 1] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j + 1].r * 16f / 273f;
+                    if (i - 1 > 0 && j + 2 < H && (depthImage[(i - 1) * V + j + 2]>=dofNearMin || depthImage[(i - 1) * V + j + 2] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j + 2].r * 4f / 273f;
+                    if (i + 0 > 0 && j - 2 > 0 && (depthImage[(i + 0) * V + j - 2]>=dofNearMin || depthImage[(i + 0) * V + j - 2] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j - 2].r * 7f / 273f;
+                    if (i + 0 > 0 && j - 1 > 0 && (depthImage[(i + 0) * V + j - 1]>=dofNearMin || depthImage[(i + 0) * V + j - 1] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j - 1].r * 26f / 273f;
+                    if (i + 0 > 0 && j - 0 > 0 && (depthImage[(i + 0) * V + j - 0]>=dofNearMin || depthImage[(i + 0) * V + j - 0] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j + 0].r * 41f / 273f;
+                    if (i + 0 > 0 && j + 1 < H && (depthImage[(i + 0) * V + j + 1]>=dofNearMin || depthImage[(i + 0) * V + j + 1] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j + 1].r * 26f / 273f;
+                    if (i + 0 > 0 && j + 2 < H && (depthImage[(i + 0) * V + j + 2]>=dofNearMin || depthImage[(i + 0) * V + j + 2] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j + 2].r * 7f / 273f;
+                    if (i + 1 < V && j - 2 > 0 && (depthImage[(i + 1) * V + j - 2]>=dofNearMin || depthImage[(i + 1) * V + j - 2] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j - 2].r * 4f / 273f;
+                    if (i + 1 < V && j - 1 > 0 && (depthImage[(i + 1) * V + j - 1]>=dofNearMin || depthImage[(i + 1) * V + j - 1] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j - 1].r * 16f / 273f;
+                    if (i + 1 < V && j - 0 > 0 && (depthImage[(i + 1) * V + j - 0]>=dofNearMin || depthImage[(i + 1) * V + j - 0] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j + 0].r * 26f / 273f;
+                    if (i + 1 < V && j + 1 < H && (depthImage[(i + 1) * V + j + 1]>=dofNearMin || depthImage[(i + 1) * V + j + 1] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j + 1].r * 16f / 273f;
+                    if (i + 1 < V && j + 2 < H && (depthImage[(i + 1) * V + j + 2]>=dofNearMin || depthImage[(i + 1) * V + j + 2] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j + 2].r * 4f / 273f;
+                    if (i + 2 < V && j - 2 > 0 && (depthImage[(i + 2) * V + j - 2]>=dofNearMin || depthImage[(i + 2) * V + j - 2] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j - 2].r * 1f / 273f;
+                    if (i + 2 < V && j - 1 > 0 && (depthImage[(i + 2) * V + j - 1]>=dofNearMin || depthImage[(i + 2) * V + j - 1] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j - 1].r * 4f / 273f;
+                    if (i + 2 < V && j - 0 > 0 && (depthImage[(i + 2) * V + j - 0]>=dofNearMin || depthImage[(i + 2) * V + j - 0] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j + 0].r * 7f / 273f;
+                    if (i + 2 < V && j + 1 < H && (depthImage[(i + 2) * V + j + 1]>=dofNearMin || depthImage[(i + 2) * V + j + 1] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j + 1].r * 4f / 273f;
+                    if (i + 2 < V && j + 2 < H && (depthImage[(i + 2) * V + j + 2]>=dofNearMin || depthImage[(i + 2) * V + j + 2] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j + 2].r * 1f / 273f;
+                    //g       
+                    if (i - 2 > 0 && j - 2 > 0 && (depthImage[(i - 2) * V + j - 2]>=dofNearMin || depthImage[(i - 2) * V + j - 2] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j - 2].g * 1f / 273f;
+                    if (i - 2 > 0 && j - 1 > 0 && (depthImage[(i - 2) * V + j - 1]>=dofNearMin || depthImage[(i - 2) * V + j - 1] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j - 1].g * 4f / 273f;
+                    if (i - 2 > 0 && j - 0 > 0 && (depthImage[(i - 2) * V + j - 0]>=dofNearMin || depthImage[(i - 2) * V + j - 0] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j + 0].g * 7f / 273f;
+                    if (i - 2 > 0 && j + 1 < H && (depthImage[(i - 2) * V + j + 1]>=dofNearMin || depthImage[(i - 2) * V + j + 1] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j + 1].g * 4f / 273f;
+                    if (i - 2 > 0 && j + 2 < H && (depthImage[(i - 2) * V + j + 2]>=dofNearMin || depthImage[(i - 2) * V + j + 2] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j + 2].g * 1f / 273f;
+                    if (i - 1 > 0 && j - 2 > 0 && (depthImage[(i - 1) * V + j - 2]>=dofNearMin || depthImage[(i - 1) * V + j - 2] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j - 2].g * 4f / 273f;
+                    if (i - 1 > 0 && j - 1 > 0 && (depthImage[(i - 1) * V + j - 1]>=dofNearMin || depthImage[(i - 1) * V + j - 1] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j - 1].g * 16f / 273f;
+                    if (i - 1 > 0 && j - 0 > 0 && (depthImage[(i - 1) * V + j - 0]>=dofNearMin || depthImage[(i - 1) * V + j - 0] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j + 0].g * 26f / 273f;
+                    if (i - 1 > 0 && j + 1 < H && (depthImage[(i - 1) * V + j + 1]>=dofNearMin || depthImage[(i - 1) * V + j + 1] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j + 1].g * 16f / 273f;
+                    if (i - 1 > 0 && j + 2 < H && (depthImage[(i - 1) * V + j + 2]>=dofNearMin || depthImage[(i - 1) * V + j + 2] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j + 2].g * 4f / 273f;
+                    if (i + 0 > 0 && j - 2 > 0 && (depthImage[(i + 0) * V + j - 2]>=dofNearMin || depthImage[(i + 0) * V + j - 2] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j - 2].g * 7f / 273f;
+                    if (i + 0 > 0 && j - 1 > 0 && (depthImage[(i + 0) * V + j - 1]>=dofNearMin || depthImage[(i + 0) * V + j - 1] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j - 1].g * 26f / 273f;
+                    if (i + 0 > 0 && j - 0 > 0 && (depthImage[(i + 0) * V + j - 0]>=dofNearMin || depthImage[(i + 0) * V + j - 0] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j + 0].g * 41f / 273f;
+                    if (i + 0 > 0 && j + 1 < H && (depthImage[(i + 0) * V + j + 1]>=dofNearMin || depthImage[(i + 0) * V + j + 1] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j + 1].g * 26f / 273f;
+                    if (i + 0 > 0 && j + 2 < H && (depthImage[(i + 0) * V + j + 2]>=dofNearMin || depthImage[(i + 0) * V + j + 2] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j + 2].g * 7f / 273f;
+                    if (i + 1 < V && j - 2 > 0 && (depthImage[(i + 1) * V + j - 2]>=dofNearMin || depthImage[(i + 1) * V + j - 2] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j - 2].g * 4f / 273f;
+                    if (i + 1 < V && j - 1 > 0 && (depthImage[(i + 1) * V + j - 1]>=dofNearMin || depthImage[(i + 1) * V + j - 1] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j - 1].g * 16f / 273f;
+                    if (i + 1 < V && j - 0 > 0 && (depthImage[(i + 1) * V + j - 0]>=dofNearMin || depthImage[(i + 1) * V + j - 0] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j + 0].g * 26f / 273f;
+                    if (i + 1 < V && j + 1 < H && (depthImage[(i + 1) * V + j + 1]>=dofNearMin || depthImage[(i + 1) * V + j + 1] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j + 1].g * 16f / 273f;
+                    if (i + 1 < V && j + 2 < H && (depthImage[(i + 1) * V + j + 2]>=dofNearMin || depthImage[(i + 1) * V + j + 2] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j + 2].g * 4f / 273f;
+                    if (i + 2 < V && j - 2 > 0 && (depthImage[(i + 2) * V + j - 2]>=dofNearMin || depthImage[(i + 2) * V + j - 2] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j - 2].g * 1f / 273f;
+                    if (i + 2 < V && j - 1 > 0 && (depthImage[(i + 2) * V + j - 1]>=dofNearMin || depthImage[(i + 2) * V + j - 1] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j - 1].g * 4f / 273f;
+                    if (i + 2 < V && j - 0 > 0 && (depthImage[(i + 2) * V + j - 0]>=dofNearMin || depthImage[(i + 2) * V + j - 0] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j + 0].g * 7f / 273f;
+                    if (i + 2 < V && j + 1 < H && (depthImage[(i + 2) * V + j + 1]>=dofNearMin || depthImage[(i + 2) * V + j + 1] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j + 1].g * 4f / 273f;
+                    if (i + 2 < V && j + 2 < H && (depthImage[(i + 2) * V + j + 2]>=dofNearMin || depthImage[(i + 2) * V + j + 2] <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j + 2].g * 1f / 273f;
+                    //b  
+                    if (i - 2 > 0 && j - 2 > 0 && (depthImage[(i - 2) * V + j - 2]>=dofNearMin || depthImage[(i - 2) * V + j - 2] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j - 2].b * 1f / 273f;
+                    if (i - 2 > 0 && j - 1 > 0 && (depthImage[(i - 2) * V + j - 1]>=dofNearMin || depthImage[(i - 2) * V + j - 1] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j - 1].b * 4f / 273f;
+                    if (i - 2 > 0 && j - 0 > 0 && (depthImage[(i - 2) * V + j - 0]>=dofNearMin || depthImage[(i - 2) * V + j - 0] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j + 0].b * 7f / 273f;
+                    if (i - 2 > 0 && j + 1 < H && (depthImage[(i - 2) * V + j + 1]>=dofNearMin || depthImage[(i - 2) * V + j + 1] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j + 1].b * 4f / 273f;
+                    if (i - 2 > 0 && j + 2 < H && (depthImage[(i - 2) * V + j + 2]>=dofNearMin || depthImage[(i - 2) * V + j + 2] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j + 2].b * 1f / 273f;
+                    if (i - 1 > 0 && j - 2 > 0 && (depthImage[(i - 1) * V + j - 2]>=dofNearMin || depthImage[(i - 1) * V + j - 2] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j - 2].b * 4f / 273f;
+                    if (i - 1 > 0 && j - 1 > 0 && (depthImage[(i - 1) * V + j - 1]>=dofNearMin || depthImage[(i - 1) * V + j - 1] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j - 1].b * 16f / 273f;
+                    if (i - 1 > 0 && j - 0 > 0 && (depthImage[(i - 1) * V + j - 0]>=dofNearMin || depthImage[(i - 1) * V + j - 0] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j + 0].b * 26f / 273f;
+                    if (i - 1 > 0 && j + 1 < H && (depthImage[(i - 1) * V + j + 1]>=dofNearMin || depthImage[(i - 1) * V + j + 1] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j + 1].b * 16f / 273f;
+                    if (i - 1 > 0 && j + 2 < H && (depthImage[(i - 1) * V + j + 2]>=dofNearMin || depthImage[(i - 1) * V + j + 2] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j + 2].b * 4f / 273f;
+                    if (i + 0 > 0 && j - 2 > 0 && (depthImage[(i + 0) * V + j - 2]>=dofNearMin || depthImage[(i + 0) * V + j - 2] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j - 2].b * 7f / 273f;
+                    if (i + 0 > 0 && j - 1 > 0 && (depthImage[(i + 0) * V + j - 1]>=dofNearMin || depthImage[(i + 0) * V + j - 1] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j - 1].b * 26f / 273f;
+                    if (i + 0 > 0 && j - 0 > 0 && (depthImage[(i + 0) * V + j - 0]>=dofNearMin || depthImage[(i + 0) * V + j - 0] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j + 0].b * 41f / 273f;
+                    if (i + 0 > 0 && j + 1 < H && (depthImage[(i + 0) * V + j + 1]>=dofNearMin || depthImage[(i + 0) * V + j + 1] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j + 1].b * 26f / 273f;
+                    if (i + 0 > 0 && j + 2 < H && (depthImage[(i + 0) * V + j + 2]>=dofNearMin || depthImage[(i + 0) * V + j + 2] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j + 2].b * 7f / 273f;
+                    if (i + 1 < V && j - 2 > 0 && (depthImage[(i + 1) * V + j - 2]>=dofNearMin || depthImage[(i + 1) * V + j - 2] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j - 2].b * 4f / 273f;
+                    if (i + 1 < V && j - 1 > 0 && (depthImage[(i + 1) * V + j - 1]>=dofNearMin || depthImage[(i + 1) * V + j - 1] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j - 1].b * 16f / 273f;
+                    if (i + 1 < V && j - 0 > 0 && (depthImage[(i + 1) * V + j - 0]>=dofNearMin || depthImage[(i + 1) * V + j - 0] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j + 0].b * 26f / 273f;
+                    if (i + 1 < V && j + 1 < H && (depthImage[(i + 1) * V + j + 1]>=dofNearMin || depthImage[(i + 1) * V + j + 1] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j + 1].b * 16f / 273f;
+                    if (i + 1 < V && j + 2 < H && (depthImage[(i + 1) * V + j + 2]>=dofNearMin || depthImage[(i + 1) * V + j + 2] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j + 2].b * 4f / 273f;
+                    if (i + 2 < V && j - 2 > 0 && (depthImage[(i + 2) * V + j - 2]>=dofNearMin || depthImage[(i + 2) * V + j - 2] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j - 2].b * 1f / 273f;
+                    if (i + 2 < V && j - 1 > 0 && (depthImage[(i + 2) * V + j - 1]>=dofNearMin || depthImage[(i + 2) * V + j - 1] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j - 1].b * 4f / 273f;
+                    if (i + 2 < V && j - 0 > 0 && (depthImage[(i + 2) * V + j - 0]>=dofNearMin || depthImage[(i + 2) * V + j - 0] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j + 0].b * 7f / 273f;
+                    if (i + 2 < V && j + 1 < H && (depthImage[(i + 2) * V + j + 1]>=dofNearMin || depthImage[(i + 2) * V + j + 1] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j + 1].b * 4f / 273f;
+                    if (i + 2 < V && j + 2 < H && (depthImage[(i + 2) * V + j + 2]>=dofNearMin || depthImage[(i + 2) * V + j + 2] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j + 2].b * 1f / 273f;
+                }                                              
+                else if (d > dofFarMax)                        
+                {                                              
+                    //r                                        
+                    if (i - 2 > 0 && j - 2 > 0 && (depthImage[(i - 2) * V + j - 2]>=dofNearMin || depthImage[(i - 2) * V + j - 2] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j - 2].r * 1f / 273f;
+                    if (i - 2 > 0 && j - 1 > 0 && (depthImage[(i - 2) * V + j - 1]>=dofNearMin || depthImage[(i - 2) * V + j - 1] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j - 1].r * 4f / 273f;
+                    if (i - 2 > 0 && j - 0 > 0 && (depthImage[(i - 2) * V + j - 0]>=dofNearMin || depthImage[(i - 2) * V + j - 0] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j + 0].r * 7f / 273f;
+                    if (i - 2 > 0 && j + 1 < H && (depthImage[(i - 2) * V + j + 1]>=dofNearMin || depthImage[(i - 2) * V + j + 1] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j + 1].r * 4f / 273f;
+                    if (i - 2 > 0 && j + 2 < H && (depthImage[(i - 2) * V + j + 2]>=dofNearMin || depthImage[(i - 2) * V + j + 2] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j + 2].r * 1f / 273f;
+                    if (i - 1 > 0 && j - 2 > 0 && (depthImage[(i - 1) * V + j - 2]>=dofNearMin || depthImage[(i - 1) * V + j - 2] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j - 2].r * 4f / 273f;
+                    if (i - 1 > 0 && j - 1 > 0 && (depthImage[(i - 1) * V + j - 1]>=dofNearMin || depthImage[(i - 1) * V + j - 1] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j - 1].r * 16f / 273f;
+                    if (i - 1 > 0 && j - 0 > 0 && (depthImage[(i - 1) * V + j - 0]>=dofNearMin || depthImage[(i - 1) * V + j - 0] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j + 0].r * 26f / 273f;
+                    if (i - 1 > 0 && j + 1 < H && (depthImage[(i - 1) * V + j + 1]>=dofNearMin || depthImage[(i - 1) * V + j + 1] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j + 1].r * 16f / 273f;
+                    if (i - 1 > 0 && j + 2 < H && (depthImage[(i - 1) * V + j + 2]>=dofNearMin || depthImage[(i - 1) * V + j + 2] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j + 2].r * 4f / 273f;
+                    if (i + 0 > 0 && j - 2 > 0 && (depthImage[(i + 0) * V + j - 2]>=dofNearMin || depthImage[(i + 0) * V + j - 2] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j - 2].r * 7f / 273f;
+                    if (i + 0 > 0 && j - 1 > 0 && (depthImage[(i + 0) * V + j - 1]>=dofNearMin || depthImage[(i + 0) * V + j - 1] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j - 1].r * 26f / 273f;
+                    if (i + 0 > 0 && j - 0 > 0 && (depthImage[(i + 0) * V + j - 0]>=dofNearMin || depthImage[(i + 0) * V + j - 0] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j + 0].r * 41f / 273f;
+                    if (i + 0 > 0 && j + 1 < H && (depthImage[(i + 0) * V + j + 1]>=dofNearMin || depthImage[(i + 0) * V + j + 1] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j + 1].r * 26f / 273f;
+                    if (i + 0 > 0 && j + 2 < H && (depthImage[(i + 0) * V + j + 2]>=dofNearMin || depthImage[(i + 0) * V + j + 2] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j + 2].r * 7f / 273f;
+                    if (i + 1 < V && j - 2 > 0 && (depthImage[(i + 1) * V + j - 2]>=dofNearMin || depthImage[(i + 1) * V + j - 2] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j - 2].r * 4f / 273f;
+                    if (i + 1 < V && j - 1 > 0 && (depthImage[(i + 1) * V + j - 1]>=dofNearMin || depthImage[(i + 1) * V + j - 1] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j - 1].r * 16f / 273f;
+                    if (i + 1 < V && j - 0 > 0 && (depthImage[(i + 1) * V + j - 0]>=dofNearMin || depthImage[(i + 1) * V + j - 0] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j + 0].r * 26f / 273f;
+                    if (i + 1 < V && j + 1 < H && (depthImage[(i + 1) * V + j + 1]>=dofNearMin || depthImage[(i + 1) * V + j + 1] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j + 1].r * 16f / 273f;
+                    if (i + 1 < V && j + 2 < H && (depthImage[(i + 1) * V + j + 2]>=dofNearMin || depthImage[(i + 1) * V + j + 2] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j + 2].r * 4f / 273f;
+                    if (i + 2 < V && j - 2 > 0 && (depthImage[(i + 2) * V + j - 2]>=dofNearMin || depthImage[(i + 2) * V + j - 2] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j - 2].r * 1f / 273f;
+                    if (i + 2 < V && j - 1 > 0 && (depthImage[(i + 2) * V + j - 1]>=dofNearMin || depthImage[(i + 2) * V + j - 1] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j - 1].r * 4f / 273f;
+                    if (i + 2 < V && j - 0 > 0 && (depthImage[(i + 2) * V + j - 0]>=dofNearMin || depthImage[(i + 2) * V + j - 0] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j + 0].r * 7f / 273f;
+                    if (i + 2 < V && j + 1 < H && (depthImage[(i + 2) * V + j + 1]>=dofNearMin || depthImage[(i + 2) * V + j + 1] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j + 1].r * 4f / 273f;
+                    if (i + 2 < V && j + 2 < H && (depthImage[(i + 2) * V + j + 2]>=dofNearMin || depthImage[(i + 2) * V + j + 2] <= dofFarMax)) resColorImage_r[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j + 2].r * 1f / 273f;
+                    //g 
+                    if (i - 2 > 0 && j - 2 > 0 && (depthImage[(i - 2) * V + j - 2]>=dofNearMin || depthImage[(i - 2) * V + j - 2]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j - 2].g * 1f / 273f;
+                    if (i - 2 > 0 && j - 1 > 0 && (depthImage[(i - 2) * V + j - 1]>=dofNearMin || depthImage[(i - 2) * V + j - 1]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j - 1].g * 4f / 273f;
+                    if (i - 2 > 0 && j - 0 > 0 && (depthImage[(i - 2) * V + j - 0]>=dofNearMin || depthImage[(i - 2) * V + j - 0]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j + 0].g * 7f / 273f;
+                    if (i - 2 > 0 && j + 1 < H && (depthImage[(i - 2) * V + j + 1]>=dofNearMin || depthImage[(i - 2) * V + j + 1]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j + 1].g * 4f / 273f;
+                    if (i - 2 > 0 && j + 2 < H && (depthImage[(i - 2) * V + j + 2]>=dofNearMin || depthImage[(i - 2) * V + j + 2]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j + 2].g * 1f / 273f;
+                    if (i - 1 > 0 && j - 2 > 0 && (depthImage[(i - 1) * V + j - 2]>=dofNearMin || depthImage[(i - 1) * V + j - 2]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j - 2].g * 4f / 273f;
+                    if (i - 1 > 0 && j - 1 > 0 && (depthImage[(i - 1) * V + j - 1]>=dofNearMin || depthImage[(i - 1) * V + j - 1]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j - 1].g * 16f / 273f;
+                    if (i - 1 > 0 && j - 0 > 0 && (depthImage[(i - 1) * V + j - 0]>=dofNearMin || depthImage[(i - 1) * V + j - 0]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j + 0].g * 26f / 273f;
+                    if (i - 1 > 0 && j + 1 < H && (depthImage[(i - 1) * V + j + 1]>=dofNearMin || depthImage[(i - 1) * V + j + 1]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j + 1].g * 16f / 273f;
+                    if (i - 1 > 0 && j + 2 < H && (depthImage[(i - 1) * V + j + 2]>=dofNearMin || depthImage[(i - 1) * V + j + 2]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j + 2].g * 4f / 273f;
+                    if (i + 0 > 0 && j - 2 > 0 && (depthImage[(i + 0) * V + j - 2]>=dofNearMin || depthImage[(i + 0) * V + j - 2]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j - 2].g * 7f / 273f;
+                    if (i + 0 > 0 && j - 1 > 0 && (depthImage[(i + 0) * V + j - 1]>=dofNearMin || depthImage[(i + 0) * V + j - 1]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j - 1].g * 26f / 273f;
+                    if (i + 0 > 0 && j - 0 > 0 && (depthImage[(i + 0) * V + j - 0]>=dofNearMin || depthImage[(i + 0) * V + j - 0]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j + 0].g * 41f / 273f;
+                    if (i + 0 > 0 && j + 1 < H && (depthImage[(i + 0) * V + j + 1]>=dofNearMin || depthImage[(i + 0) * V + j + 1]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j + 1].g * 26f / 273f;
+                    if (i + 0 > 0 && j + 2 < H && (depthImage[(i + 0) * V + j + 2]>=dofNearMin || depthImage[(i + 0) * V + j + 2]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j + 2].g * 7f / 273f;
+                    if (i + 1 < V && j - 2 > 0 && (depthImage[(i + 1) * V + j - 2]>=dofNearMin || depthImage[(i + 1) * V + j - 2]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j - 2].g * 4f / 273f;
+                    if (i + 1 < V && j - 1 > 0 && (depthImage[(i + 1) * V + j - 1]>=dofNearMin || depthImage[(i + 1) * V + j - 1]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j - 1].g * 16f / 273f;
+                    if (i + 1 < V && j - 0 > 0 && (depthImage[(i + 1) * V + j - 0]>=dofNearMin || depthImage[(i + 1) * V + j - 0]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j + 0].g * 26f / 273f;
+                    if (i + 1 < V && j + 1 < H && (depthImage[(i + 1) * V + j + 1]>=dofNearMin || depthImage[(i + 1) * V + j + 1]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j + 1].g * 16f / 273f;
+                    if (i + 1 < V && j + 2 < H && (depthImage[(i + 1) * V + j + 2]>=dofNearMin || depthImage[(i + 1) * V + j + 2]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j + 2].g * 4f / 273f;
+                    if (i + 2 < V && j - 2 > 0 && (depthImage[(i + 2) * V + j - 2]>=dofNearMin || depthImage[(i + 2) * V + j - 2]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j - 2].g * 1f / 273f;
+                    if (i + 2 < V && j - 1 > 0 && (depthImage[(i + 2) * V + j - 1]>=dofNearMin || depthImage[(i + 2) * V + j - 1]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j - 1].g * 4f / 273f;
+                    if (i + 2 < V && j - 0 > 0 && (depthImage[(i + 2) * V + j - 0]>=dofNearMin || depthImage[(i + 2) * V + j - 0]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j + 0].g * 7f / 273f;
+                    if (i + 2 < V && j + 1 < H && (depthImage[(i + 2) * V + j + 1]>=dofNearMin || depthImage[(i + 2) * V + j + 1]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j + 1].g * 4f / 273f;
+                    if (i + 2 < V && j + 2 < H && (depthImage[(i + 2) * V + j + 2]>=dofNearMin || depthImage[(i + 2) * V + j + 2]  <= dofFarMax)) resColorImage_g[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j + 2].g * 1f / 273f;
+                    //b                                       (     )                                        (     )
+                    if (i - 2 > 0 && j - 2 > 0 && (depthImage[(i - 2) * V + j - 2]>=dofNearMin || depthImage[(i - 2) * V + j - 2] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j - 2].b * 1f / 273f;
+                    if (i - 2 > 0 && j - 1 > 0 && (depthImage[(i - 2) * V + j - 1]>=dofNearMin || depthImage[(i - 2) * V + j - 1] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j - 1].b * 4f / 273f;
+                    if (i - 2 > 0 && j - 0 > 0 && (depthImage[(i - 2) * V + j - 0]>=dofNearMin || depthImage[(i - 2) * V + j - 0] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j + 0].b * 7f / 273f;
+                    if (i - 2 > 0 && j + 1 < H && (depthImage[(i - 2) * V + j + 1]>=dofNearMin || depthImage[(i - 2) * V + j + 1] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j + 1].b * 4f / 273f;
+                    if (i - 2 > 0 && j + 2 < H && (depthImage[(i - 2) * V + j + 2]>=dofNearMin || depthImage[(i - 2) * V + j + 2] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i - 2) * sizeOfTheFilterVertical + j + 2].b * 1f / 273f;
+                    if (i - 1 > 0 && j - 2 > 0 && (depthImage[(i - 1) * V + j - 2]>=dofNearMin || depthImage[(i - 1) * V + j - 2] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j - 2].b * 4f / 273f;
+                    if (i - 1 > 0 && j - 1 > 0 && (depthImage[(i - 1) * V + j - 1]>=dofNearMin || depthImage[(i - 1) * V + j - 1] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j - 1].b * 16f / 273f;
+                    if (i - 1 > 0 && j - 0 > 0 && (depthImage[(i - 1) * V + j - 0]>=dofNearMin || depthImage[(i - 1) * V + j - 0] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j + 0].b * 26f / 273f;
+                    if (i - 1 > 0 && j + 1 < H && (depthImage[(i - 1) * V + j + 1]>=dofNearMin || depthImage[(i - 1) * V + j + 1] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j + 1].b * 16f / 273f;
+                    if (i - 1 > 0 && j + 2 < H && (depthImage[(i - 1) * V + j + 2]>=dofNearMin || depthImage[(i - 1) * V + j + 2] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i - 1) * sizeOfTheFilterVertical + j + 2].b * 4f / 273f;
+                    if (i + 0 > 0 && j - 2 > 0 && (depthImage[(i + 0) * V + j - 2]>=dofNearMin || depthImage[(i + 0) * V + j - 2] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j - 2].b * 7f / 273f;
+                    if (i + 0 > 0 && j - 1 > 0 && (depthImage[(i + 0) * V + j - 1]>=dofNearMin || depthImage[(i + 0) * V + j - 1] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j - 1].b * 26f / 273f;
+                    if (i + 0 > 0 && j - 0 > 0 && (depthImage[(i + 0) * V + j - 0]>=dofNearMin || depthImage[(i + 0) * V + j - 0] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j + 0].b * 41f / 273f;
+                    if (i + 0 > 0 && j + 1 < H && (depthImage[(i + 0) * V + j + 1]>=dofNearMin || depthImage[(i + 0) * V + j + 1] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j + 1].b * 26f / 273f;
+                    if (i + 0 > 0 && j + 2 < H && (depthImage[(i + 0) * V + j + 2]>=dofNearMin || depthImage[(i + 0) * V + j + 2] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 0) * sizeOfTheFilterVertical + j + 2].b * 7f / 273f;
+                    if (i + 1 < V && j - 2 > 0 && (depthImage[(i + 1) * V + j - 2]>=dofNearMin || depthImage[(i + 1) * V + j - 2] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j - 2].b * 4f / 273f;
+                    if (i + 1 < V && j - 1 > 0 && (depthImage[(i + 1) * V + j - 1]>=dofNearMin || depthImage[(i + 1) * V + j - 1] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j - 1].b * 16f / 273f;
+                    if (i + 1 < V && j - 0 > 0 && (depthImage[(i + 1) * V + j - 0]>=dofNearMin || depthImage[(i + 1) * V + j - 0] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j + 0].b * 26f / 273f;
+                    if (i + 1 < V && j + 1 < H && (depthImage[(i + 1) * V + j + 1]>=dofNearMin || depthImage[(i + 1) * V + j + 1] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j + 1].b * 16f / 273f;
+                    if (i + 1 < V && j + 2 < H && (depthImage[(i + 1) * V + j + 2]>=dofNearMin || depthImage[(i + 1) * V + j + 2] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 1) * sizeOfTheFilterVertical + j + 2].b * 4f / 273f;
+                    if (i + 2 < V && j - 2 > 0 && (depthImage[(i + 2) * V + j - 2]>=dofNearMin || depthImage[(i + 2) * V + j - 2] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j - 2].b * 1f / 273f;
+                    if (i + 2 < V && j - 1 > 0 && (depthImage[(i + 2) * V + j - 1]>=dofNearMin || depthImage[(i + 2) * V + j - 1] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j - 1].b * 4f / 273f;
+                    if (i + 2 < V && j - 0 > 0 && (depthImage[(i + 2) * V + j - 0]>=dofNearMin || depthImage[(i + 2) * V + j - 0] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j + 0].b * 7f / 273f;
+                    if (i + 2 < V && j + 1 < H && (depthImage[(i + 2) * V + j + 1]>=dofNearMin || depthImage[(i + 2) * V + j + 1] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j + 1].b * 4f / 273f;
+                    if (i + 2 < V && j + 2 < H && (depthImage[(i + 2) * V + j + 2]>=dofNearMin || depthImage[(i + 2) * V + j + 2] <= dofFarMax)) resColorImage_b[i*V+j] += rawColorImage[(i + 2) * sizeOfTheFilterVertical + j + 2].b * 1f / 273f;
+                }
+                else
                 {
-                    int ii = (int)Mathf.Floor(c * pixelpermmx);
-                    int jj = (int)Mathf.Floor(c * pixelpermmy);
-                    for (int convi = 0; convi < ii; convi++)//((ii/2)-(ii%2))
-                    {
-                        for (int convj = 0; convj <= jj; convj++)
-                        {
-                            
-                        }
-                    }
+                    resColorImage_r[i*V+j] = rawColorImage[i * sizeOfTheFilterVertical + j].r;
+                    resColorImage_g[i*V+j] = rawColorImage[i * sizeOfTheFilterVertical + j].g;
+                    resColorImage_b[i * V + j] = rawColorImage[i * sizeOfTheFilterVertical + j].b;
                 }
             }
         }
+        for (int i = 0; i < sizeOfTheFilterVertical; i++)
+        {
+            for (int j = 0; j < sizeOfTheFilterHorizontal; j++)
+            {
+                rawColorImage[i * sizeOfTheFilterVertical + j].r = resColorImage_r[i*V+j];
+                rawColorImage[i * sizeOfTheFilterVertical + j].g = resColorImage_g[i*V+j];
+                rawColorImage[i * sizeOfTheFilterVertical + j].b = resColorImage_b[i * V + j];
+            } 
+        }
 
-
-
-        if (rawImageOutput != null)
+        Debug.Log(rawColorImage[0]);
+    if (rawImageOutput != null)
         {
             Texture2D texture = new Texture2D(sizeOfTheFilterVertical, sizeOfTheFilterHorizontal);
             texture.SetPixels(rawColorImage);
@@ -161,7 +333,7 @@ public class PlayerControl : MonoBehaviour
                 Vector3 direction = angleRight * (angleDown * ray.direction);
                 //bool isHit = Physics.Raycast(position, direction, out hit, viewMaxDistance);
                 //QueryParameters queryParameters = QueryParameters();
-                Debug.Log((i * sizeOfTheFilterVertical) + j);
+                
                 _raycastCommands[(i * sizeOfTheFilterVertical) + j] = new RaycastCommand(position, direction, queryParameters, viewMaxDistance);
                 //régi verzió
                 //_raycastCommands[i * sizeOfTheFilterVertical + j] = new RaycastCommand(position, direction, viewMaxDistance, 0/* ~0u layermasj*/, 1/*max hit*/);

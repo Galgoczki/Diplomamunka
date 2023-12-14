@@ -649,8 +649,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 202.9, y: 139.3}
-  m_SizeDelta: {x: 200, y: 136}
+  m_AnchoredPosition: {x: 155.6, y: 153.6}
+  m_SizeDelta: {x: 150, y: 150}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &419134118
 MonoBehaviour:
@@ -1285,7 +1285,7 @@ MonoBehaviour:
   lookSpeed: 2
   lookXLimit: 45
   flenght: 50
-  fnumber: 1.8
+  fnumber: 10
   focusdistance: 3000
   coc: 0.03
   apertureDiameter: 4
@@ -1294,8 +1294,8 @@ MonoBehaviour:
   rawImageOutput: {fileID: 419134118}
   canMove: 1
   viewMaxDistance: 20
-  angleOfViewHorizontal: 39.6
-  angleOfViewVertical: 27
+  angleOfViewHorizontal: 35
+  angleOfViewVertical: 35
   sizeOfTheFilterHorizontal: 100
   sizeOfTheFilterVertical: 100
 --- !u!1 &1443705180
