@@ -226,7 +226,7 @@ public class PlayerControl : MonoBehaviour
         {
             for (int j = 0; j < sizeOfTheFilterHorizontal; j++)
             {
-                float c = apertureDiameter * ((depthImage[i * sizeOfTheFilterVertical + j] - focusdistance) / depthImage[i * sizeOfTheFilterVertical + j]);//mm és fel kellene szorozni a szenzorok száma/mmrel
+                float c = apertureDiameter * ((depthImage[i * sizeOfTheFilterVertical + j] - focusdistance) / depthImage[i * sizeOfTheFilterVertical + j]);
                 int cPerSensorx = (int)Math.Floor(c * pixelpermmx);
                 int cPerSensory = (int)Math.Floor(c * pixelpermmy);
                 cPerSensorx = cPerSensorx % 2 == 0 ? cPerSensorx + 1 : cPerSensorx;
@@ -268,9 +268,12 @@ public class PlayerControl : MonoBehaviour
                 rawColorImage[i * sizeOfTheFilterVertical + j].r = resr/ referencMultiple;
                 rawColorImage[i * sizeOfTheFilterVertical + j].g = resg/ referencMultiple;
                 rawColorImage[i * sizeOfTheFilterVertical + j].b = resb/ referencMultiple;
+
+                //teszt c
+                //rawColorImage[i * sizeOfTheFilterVertical + j] = Color.Lerp(Color.white, Color.black, c/5);
             }
         }
-    if (rawImageOutput != null)
+        if (rawImageOutput != null)
         {
             Texture2D texture = new Texture2D(sizeOfTheFilterHorizontal, sizeOfTheFilterVertical);
             texture.SetPixels(rawColorImage);
