@@ -109,7 +109,7 @@ public class PlayerControl : MonoBehaviour
     private JobHandle _jobHandle;
     private bool isNextRaycast = false;
 
-    //ellenˆrizni hogy frissiteni kell e a raycasthoz a t·bl·zatot
+    //ellen√∂rizni hogy frissiteni kell e a raycasthoz a t√°bl√°zatot
     public int pre_sizeOfTheFilterHorizontal;
     public int pre_sizeOfTheFilterVertical;
 
@@ -123,7 +123,7 @@ public class PlayerControl : MonoBehaviour
 
 
 
-        //inicializ·l·s
+        //inicializ√°l√°s
         float h = flenght + (flenght * flenght) / (fnumber * coc);
         float dofFarMax = (h * focusdistance) / (h - (focusdistance - flenght));
         float dofNearMin = (h * focusdistance) / (h + (focusdistance - flenght));
@@ -133,10 +133,10 @@ public class PlayerControl : MonoBehaviour
         float pixelpermmy = sizeOfTheFilterVertical / sensorSizeVertikal;
         Color[] rawColorImage = new Color[sizeOfTheFilterHorizontal * sizeOfTheFilterVertical];
         float[] depthImage = new float[sizeOfTheFilterHorizontal * sizeOfTheFilterVertical];
-        //eredmÈnykiir·s
-        dataoutput.text = "adatok\nl·tÛszˆg: " + angleOfViewHorizontal.ToString() + ":" + angleOfViewVertical.ToString() +
-            "\nszenzor mÈrete: " + sensorSizeHorizontal.ToString() + ":" + sensorSizeVertikal + " mm\nFelbont·s: " + sizeOfTheFilterHorizontal.ToString() + ":" + sizeOfTheFilterVertical.ToString() +
-            "\nfokusz t·vols·g:" + flenght.ToString() + "mm\nmÈlysÈgÈlesÈg maximum t·volss·g: " + dofFarMax.ToString() + "mm\nmÈlysÈgÈlesÈg minimum t·volss·g: " + dofNearMin.ToString() + "mm\nmÈlysÈgÈlesÈg: " + dof.ToString()+"mm";
+        //eredm√©nykiir√°s
+        dataoutput.text = "adatok\nl√°t√≥sz√∂g: " + angleOfViewHorizontal.ToString() + ":" + angleOfViewVertical.ToString() +
+            "\nszenzor m√©rete: " + sensorSizeHorizontal.ToString() + ":" + sensorSizeVertikal + " mm\nFelbont√°s: " + sizeOfTheFilterHorizontal.ToString() + ":" + sizeOfTheFilterVertical.ToString() +
+            "\nfokusz t√°vols√°g:" + flenght.ToString() + "mm\nm√©lys√©g√©les√©g maximum t√°volss√°g: " + dofFarMax.ToString() + "mm\nm√©lys√©g√©les√©g minimum t√°volss√°g: " + dofNearMin.ToString() + "mm\nm√©lys√©g√©les√©g: " + dof.ToString()+"mm";
     }
 
     private void OnDestroy()
@@ -182,14 +182,14 @@ public class PlayerControl : MonoBehaviour
         float pixelpermmy = sizeOfTheFilterVertical / sensorSizeVertikal;
         Debug.Log("pixelpermmx: " + pixelpermmx.ToString());
         Debug.Log("pixelpermmy: " + pixelpermmy.ToString());
-        //adat feldolgoz·sa
+        //adat feldolgoz√°sa
         Color[] rawColorImage = new Color[sizeOfTheFilterHorizontal * sizeOfTheFilterVertical];
         float[] depthImage = new float[sizeOfTheFilterHorizontal * sizeOfTheFilterVertical];
 
-        //eredmÈnykiir·s
-        dataoutput.text = "adatok\nl·tÛszˆg: "+ angleOfViewHorizontal.ToString() + ":"+ angleOfViewVertical.ToString() + 
-            "\nszenzor mÈrete: " + sensorSizeHorizontal.ToString() + ":"+ sensorSizeVertikal + " mm\nFelbont·s: "+ sizeOfTheFilterHorizontal.ToString() + ":"+ sizeOfTheFilterVertical.ToString() + 
-            "\nfokusz t·vols·g:"+flenght.ToString()+"mm\nmÈlysÈgÈlesÈg maximum t·volss·g: " + dofFarMax.ToString() + "mm\nmÈlysÈgÈlesÈg minimum t·volss·g: " + dofNearMin.ToString() + "mm\nmÈlysÈgÈlesÈg: " + dof.ToString()+"mm";
+        //eredm√©nykiir√°s
+        dataoutput.text = "adatok\nl√°t√≥sz√∂g: "+ angleOfViewHorizontal.ToString() + ":"+ angleOfViewVertical.ToString() + 
+            "\nszenzor m√©rete: " + sensorSizeHorizontal.ToString() + ":"+ sensorSizeVertikal + " mm\nFelbont√°s: "+ sizeOfTheFilterHorizontal.ToString() + ":"+ sizeOfTheFilterVertical.ToString() + 
+            "\nfokusz t√°vols√°g:"+flenght.ToString()+"mm\nm√©lys√©g√©les√©g maximum t√°volss√°g: " + dofFarMax.ToString() + "mm\nm√©lys√©g√©les√©g minimum t√°volss√°g: " + dofNearMin.ToString() + "mm\nm√©lys√©g√©les√©g: " + dof.ToString()+"mm";
 
         for (int i = 0; i < sizeOfTheFilterVertical; i++) {
             for (int j = 0; j < sizeOfTheFilterHorizontal; j++) {
@@ -198,7 +198,7 @@ public class PlayerControl : MonoBehaviour
                     MeshCollider meshCollider = _raycastHits[i * sizeOfTheFilterVertical + j].collider as MeshCollider;
                     if (rend == null || rend.sharedMaterial == null || rend.sharedMaterial.mainTexture == null || meshCollider == null)
                     {
-                        string problem = "problÈma: ";
+                        string problem = "probl√©ma: ";
                         if (rend == null) problem += "nincs renderer\n";
                         if (rend.sharedMaterial == null) problem += "nincs shader material\n";
                         if (rend.sharedMaterial.mainTexture == null) problem += "nincs mainTextura\n";
@@ -221,7 +221,7 @@ public class PlayerControl : MonoBehaviour
             }
         }
         //depth of field
-        Dictionary<Vector2, gauss2d > hashmap = new Dictionary<Vector2, gauss2d > ();
+        Dictionary<Vector2, gauss2d > gauss2DDictionary = new Dictionary<Vector2, gauss2d > ();
         for (int i = 0; i < sizeOfTheFilterVertical; i++)
         {
             for (int j = 0; j < sizeOfTheFilterHorizontal; j++)
@@ -237,12 +237,12 @@ public class PlayerControl : MonoBehaviour
                 if (cPerSensorx <= 1 || cPerSensory <= 1) {
                     continue;
                 }
-                if (!hashmap.ContainsKey(new Vector2(cPerSensorx, cPerSensory)))
+                if (!gauss2DDictionary.ContainsKey(new Vector2(cPerSensorx, cPerSensory)))
                 {
-                    hashmap.Add(new Vector2(cPerSensorx, cPerSensory), new gauss2d(cPerSensorx, cPerSensory));
+                    gauss2DDictionary.Add(new Vector2(cPerSensorx, cPerSensory), new gauss2d(cPerSensorx, cPerSensory));
                 }
                 gauss2d currentGauss = null;
-                hashmap.TryGetValue(new Vector2(cPerSensorx, cPerSensory), out currentGauss);
+                gauss2DDictionary.TryGetValue(new Vector2(cPerSensorx, cPerSensory), out currentGauss);
                 float resr = 0;
                 float resg = 0;
                 float resb = 0;
@@ -290,7 +290,7 @@ public class PlayerControl : MonoBehaviour
         QueryParameters queryParameters = QueryParameters.Default;
         queryParameters.layerMask = LayerMask.GetMask("Default");
         _jobHandle.Complete();
-        //kˆvetkezˆ raycastok elindit·sa
+        //k√∂vetkez√∂ raycastok elindit√°sa
         Ray ray = cam.ScreenPointToRay(new Vector3(Mathf.Round(cam.pixelWidth / 2), Mathf.Round(cam.pixelHeight / 2), 0));
         Ray rayOrigine = cam.ScreenPointToRay(Input.mousePosition);
         for (int i = 0; i < sizeOfTheFilterVertical; i++) {
@@ -307,7 +307,7 @@ public class PlayerControl : MonoBehaviour
                 //QueryParameters queryParameters = QueryParameters();
                 
                 _raycastCommands[(i * sizeOfTheFilterVertical) + j] = new RaycastCommand(position, direction, queryParameters, viewMaxDistance);
-                //rÈgi verziÛ
+                //r√©gi verzi√≥
                 //_raycastCommands[i * sizeOfTheFilterVertical + j] = new RaycastCommand(position, direction, viewMaxDistance, 0/* ~0u layermasj*/, 1/*max hit*/);
 
             }
@@ -315,7 +315,7 @@ public class PlayerControl : MonoBehaviour
         //JobHandle handle = prepareCommandsJob.ScheduleParallel(commands.Length, 64, default);
         int commandsPerJob = (int)Mathf.Floor(Mathf.Max((sizeOfTheFilterVertical * sizeOfTheFilterHorizontal) / JobsUtility.JobWorkerCount, 1));
         //handle = RaycastCommand.ScheduleBatch(commands, results, commandsPerJob, maxHits, );
-        Debug.Log("egysÈgek: " + commandsPerJob);
+        Debug.Log("egys√©gek: " + commandsPerJob);
         _jobHandle = RaycastCommand.ScheduleBatch(_raycastCommands, _raycastHits, commandsPerJob, 1, default(JobHandle));
 
     }
@@ -396,7 +396,7 @@ public class PlayerControl : MonoBehaviour
                 Cursor.visible = false;
             }
         }
-        //kilÈpÈs
+        //kil√©p√©s
         if (Input.GetKey("escape"))
         {
             Application.Quit();
